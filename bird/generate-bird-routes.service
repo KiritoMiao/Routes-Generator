@@ -1,0 +1,8 @@
+[Unit]
+Description=Generate BIRD Routes
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /etc/bird/generate_bird_routes.py
