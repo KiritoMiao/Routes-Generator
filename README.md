@@ -1,82 +1,81 @@
-## BIRD Routes Generator
+## 🐦 BIRD Routes Generator
 
-This project provides a dynamic route generator for [BIRD](https://bird.network.cz/) that fetches a IP ranges and automatically generates BIRD-compatible static route configuration files. It supports reverse mode, optional BIRD reload, and Telegram alerts.
+This project provides multiple dynamic route generator for [BIRD](https://bird.network.cz/).
 
 ---
 
-### 📦 Features
+### 📦 Modules
 
-* Downloads a txt IP ranges, default from [chnroutes2](https://github.com/misakaio/chnroutes2)
-* Converts IPs to BIRD `route ... via` statements
-* Supports reverse mode: generate routes **excluding** the ip list
-* Optionally reloads BIRD after config generation
-* Telegram integration for notifications
-* systemd service and timer for automatic scheduling
+| Module                            | Core Executible           | Description                                                               |
+| --------------------------------- | ------------------------- | ------------------------------------------------------------------------- |
+| IP List to bird (Linux)           | `generate_bird_routes.py` | Python script to generate BIRD route config from a txt IP list            |
+| Process Dynamic loader (Windows)  | `dynamic-route.ps1`       | PowerShell script to upload live IPs based on running processes to BIRD   |
+
 
 ---
 
 ### 📁 File Structure
 
-All files are located under [`bird/`](https://github.com/KiritoMiao/Routes-Generator/tree/main/bird):
-
-| File                           | Purpose                                      |
-| ------------------------------ | -------------------------------------------- |
-| `generate_bird_routes.py`      | Main route generation script                 |
-| `generate-bird-routes.service` | systemd service to run the script            |
-| `generate-bird-routes.timer`   | systemd timer to schedule it (daily @ 03:00) |
-| `setup-bird-routes.sh`         | Interactive installer and configurator       |
-
----
-
-### ⚙️ Installation
-
-```bash
-git clone https://github.com/KiritoMiao/Routes-Generator.git
-cd Routes-Generator/bird
-chmod +x setup-bird-routes.sh
-sudo ./setup-bird-routes.sh
-```
-
-The setup script will:
-
-* Download and install the Python script + systemd units
-* Ask you to input:
-
-  * Network interface for routing
-  * Whether to reload BIRD after changes
-  * Telegram bot config (optional)
-* Configure the script
-* Reload systemd and offer to run a test
+Routes-Generator/
+├── bird/
+│   ├── generate_bird_routes.py           # IP-list based route generator
+│   ├── generate-bird-routes.service      # systemd unit
+│   ├── generate-bird-routes.timer        # systemd timer
+│   └── install.sh                        # Linux installer script
+│
+├── windows/
+│   └── dynamic-route.ps1                 # Windows PowerShell dynamic route uploader
 
 ---
 
-### 🔄 Manual Usage
+### ⚙️ Usage
+#### IP List to bird (Linux)
 
-To test manually:
+1. Clone the repo and install:
 
-```bash
-sudo systemctl start generate-bird-routes.service
-```
+   ```bash
+   git clone https://github.com/KiritoMiao/Routes-Generator.git
+   cd Routes-Generator/bird
+   chmod +x setup-bird-routes.sh
+   sudo ./setup-bird-routes.sh
+   ```
 
-To enable daily scheduled updates:
+2. Test once:
 
-```bash
-sudo systemctl enable --now generate-bird-routes.timer
-```
+   ```bash
+   sudo systemctl start generate-bird-routes.service
+   ```
 
-To check logs:
+3. Enable auto-update daily at 3:00 AM:
 
-```bash
-journalctl -u generate-bird-routes.service
-```
+   ```bash
+   sudo systemctl enable --now generate-bird-routes.timer
+   ```
 
 ---
+#### Process Dynamic loader (Windows)
 
-### ⚙️ Configuration
+1. Edit `windows/dynamic-route.ps1` to configure:
 
-Edit `/etc/bird/generate_bird_routes.py` to change:
+   * `$ProcessNames = @("chrome.exe", "ssh.exe")`
+   * SSH connection and file upload settings
 
-* `OUT_INTERFACE` – output interface (e.g. `eth0`, `wg0`)
-* `REVERSE = True` – to generate routes not included in the list
-* `RELOAD_BIRD = True` – whether to run `birdc configure`
-* Telegram settings (optional alerts on success/failure)
+2. Run once:
+
+   ```powershell
+   .\dynamic-route.ps1
+   ```
+
+3. Run continuously every 10s (dynamic mode):
+
+   ```powershell
+   .\dynamic-route.ps1 -Dynamic
+   ```
+
+Optional switches:
+
+* `-Verbose` – Show debug info
+* `-DryRun` – Simulate only, no actual execution
+
+
+---
