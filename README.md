@@ -1,81 +1,86 @@
 ## 🐦 BIRD Routes Generator
 
-This project provides multiple dynamic route generator for [BIRD](https://bird.network.cz/).
+This project provides tools to dynamically generate route configurations for [BIRD](https://bird.network.cz/), using static IP lists or live process-based connections.
 
 ---
 
 ### 📦 Modules
 
-| Module                            | Core Executible           | Description                                                               |
-| --------------------------------- | ------------------------- | ------------------------------------------------------------------------- |
-| IP List to bird (Linux)           | `generate_bird_routes.py` | Python script to generate BIRD route config from a txt IP list            |
-| Process Dynamic loader (Windows)  | `dynamic-route.ps1`       | PowerShell script to upload live IPs based on running processes to BIRD   |
-
+| Module                                 | Script/Executable         | Description                                                            |
+| -------------------------------------- | ------------------------- | ---------------------------------------------------------------------- |
+| IP List to BIRD (Linux)                | `generate_bird_routes.py` | Generates static BIRD routes from a plain text IP list                 |
+| Process-based Route Uploader (Windows) | `dynamic-route.ps1`       | Extracts live IPs from process connections and uploads to BIRD via SSH |
 
 ---
 
 ### 📁 File Structure
 
+```
 Routes-Generator/
 ├── bird/
-│   ├── generate_bird_routes.py           # IP-list based route generator
-│   ├── generate-bird-routes.service      # systemd unit
-│   ├── generate-bird-routes.timer        # systemd timer
-│   └── install.sh                        # Linux installer script
+│   ├── generate_bird_routes.py         # IP-list based route generator
+│   ├── generate-bird-routes.service    # systemd unit file
+│   ├── generate-bird-routes.timer      # systemd timer file
+│   └── install.sh                      # Linux installation script
 │
 ├── windows/
-│   └── dynamic-route.ps1                 # Windows PowerShell dynamic route uploader
+│   └── dynamic-route.ps1               # PowerShell dynamic route uploader
+```
 
 ---
 
 ### ⚙️ Usage
-#### IP List to bird (Linux)
 
-1. Clone the repo and install:
+#### 📌 IP List to BIRD (Linux)
+
+1. **Install:**
 
    ```bash
    git clone https://github.com/KiritoMiao/Routes-Generator.git
    cd Routes-Generator/bird
-   chmod +x setup-bird-routes.sh
-   sudo ./setup-bird-routes.sh
+   chmod +x install.sh
+   sudo ./install.sh
    ```
 
-2. Test once:
+2. **Run once manually:**
 
    ```bash
    sudo systemctl start generate-bird-routes.service
    ```
 
-3. Enable auto-update daily at 3:00 AM:
+3. **Enable automatic daily updates at 3:00 AM:**
 
    ```bash
    sudo systemctl enable --now generate-bird-routes.timer
    ```
 
 ---
-#### Process Dynamic loader (Windows)
 
-1. Edit `windows/dynamic-route.ps1` to configure:
+#### 🪟 Process-based Dynamic Loader (Windows)
 
-   * `$ProcessNames = @("chrome.exe", "ssh.exe")`
-   * SSH connection and file upload settings
+1. **Configure `windows/dynamic-route.ps1`:**
 
-2. Run once:
+   * Set process names:
+
+     ```powershell
+     $ProcessNames = @("chrome.exe", "ssh.exe")
+     ```
+   * Define SSH settings (user, host, port, and target file)
+
+2. **Run once manually:**
 
    ```powershell
    .\dynamic-route.ps1
    ```
 
-3. Run continuously every 10s (dynamic mode):
+3. **Run in continuous monitoring mode (every 10 seconds):**
 
    ```powershell
    .\dynamic-route.ps1 -Dynamic
    ```
 
-Optional switches:
+**Optional flags:**
 
-* `-Verbose` – Show debug info
-* `-DryRun` – Simulate only, no actual execution
+* `-Verbose` – Enables detailed output
+* `-DryRun` – Simulate changes without uploading
 
-
----
